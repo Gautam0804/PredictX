@@ -1,3 +1,9 @@
+const {
+  createSensorReading,
+  getSensorReadings,
+  getLatestSensorReading
+} = require("../services/sensor.service");
+
 const SENSOR_LIMITS = {
   temperature: {
     min: 0,
@@ -29,7 +35,8 @@ const validateSensorValue = (
   value,
   fieldName
 ) => {
-  const limits = SENSOR_LIMITS[fieldName];
+  const limits =
+    SENSOR_LIMITS[fieldName];
 
   if (
     typeof value !== "number" ||
@@ -56,4 +63,161 @@ const validateSensorValue = (
 
     throw error;
   }
+};
+
+const createReading = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const {
+      machineId,
+      temperature,
+      vibration,
+      pressure,
+      rpm,
+      current,
+      recordedAt
+    } = req.body;
+
+    if (!machineId) {
+      return res.status(400).json({
+        success: false,
+        message: "machineId is required"
+      });
+    }
+
+    validateSensorValue(
+      temperature,
+      "temperature"
+    );
+
+    validateSensorValue(
+      vibration,
+      "vibration"
+    );
+
+    validateSensorValue(
+      pressure,
+      "pressure"
+    );
+
+    validateSensorValue(
+      rpm,
+      "rpm"
+    );
+
+    validateSensorValue(
+      current,
+      "current"
+    );
+
+    let parsedRecordedAt;
+
+    if (recordedAt !== undefined) {
+      parsedRecordedAt =
+        new Date(recordedAt);
+
+      if (
+        Number.isNaN(
+          parsedRecordedAt.getTime()
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "recordedAt must be a valid date"
+        });
+      }
+    }
+
+    const reading =
+      await createSensorReading({
+        machineId,
+        temperature,
+        vibration,
+        pressure,
+        rpm,
+        current,
+        recordedAt:
+          parsedRecordedAt
+      });
+
+    res.status(201).json({
+      success: true,
+      message:
+        "Sensor reading recorded successfully",
+      data: reading
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getReadings = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const limit = Math.min(
+      Math.max(
+        Number.parseInt(
+          req.query.limit,
+          10
+        ) || 50,
+        1
+      ),
+      200
+    );
+
+    const readings =
+      await getSensorReadings(
+        req.params.machineId,
+        limit
+      );
+
+    res.status(200).json({
+      success: true,
+      count: readings.length,
+      data: readings
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getLatestReading = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const reading =
+      await getLatestSensorReading(
+        req.params.machineId
+      );
+
+    if (!reading) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No sensor readings found for this machine"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: reading
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  createReading,
+  getReadings,
+  getLatestReading
 };

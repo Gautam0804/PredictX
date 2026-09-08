@@ -3,6 +3,55 @@ const mongoose = require("mongoose");
 const Machine = require("../models/Machine");
 const SensorReading = require("../models/SensorReading");
 
+const {
+  calculateHealthScore,
+  getRiskLevel,
+  getMachineStatus
+} = require("./health.service");
+
+const ML_SERVICE_URL =
+  process.env.ML_SERVICE_URL ||
+  "http://localhost:8000";
+
+const detectAnomaly = async ({
+  temperature,
+  vibration,
+  pressure,
+  rpm,
+  current
+}) => {
+  const response = await fetch(
+    `${ML_SERVICE_URL}/anomaly`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+
+      body: JSON.stringify({
+        temperature,
+        vibration,
+        pressure,
+        rpm,
+        current
+      })
+    }
+  );
+
+  const responseText =
+    await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      `ML anomaly service returned ${response.status}: ${responseText}`
+    );
+  }
+
+  return JSON.parse(responseText);
+};
+
 const createSensorReading = async ({
   machineId,
   temperature,
@@ -12,69 +61,186 @@ const createSensorReading = async ({
   current,
   recordedAt
 }) => {
-  const session = await mongoose.startSession();
+  /*
+   * Step 1:
+   * Verify that the machine exists.
+   */
+  const machine =
+    await Machine.findOne({
+      machineId
+    }).lean();
+
+  if (!machine) {
+    const error = new Error(
+      `Machine ${machineId} not found`
+    );
+
+    error.statusCode = 404;
+
+    throw error;
+  }
+
+  /*
+   * Step 2:
+   * Calculate health before opening
+   * the database transaction.
+   */
+  const healthScore =
+    calculateHealthScore({
+      temperature,
+      vibration,
+      pressure,
+      rpm,
+      current
+    });
+
+  /*
+   * Step 3:
+   * Ask the ML service for anomaly
+   * detection.
+   */
+  const anomaly =
+    await detectAnomaly({
+      temperature,
+      vibration,
+      pressure,
+      rpm,
+      current
+    });
+
+  const isAnomaly =
+    Boolean(anomaly.is_anomaly);
+
+  const anomalyScore =
+    Number(anomaly.anomaly_score);
+
+  /*
+   * Step 4:
+   * Calculate machine risk.
+   */
+  const riskLevel =
+    getRiskLevel({
+      healthScore,
+      isAnomaly
+    });
+
+  const machineStatus =
+    getMachineStatus(
+      riskLevel
+    );
+
+  /*
+   * Step 5:
+   * Now start the MongoDB transaction.
+   */
+  const session =
+    await mongoose.startSession();
 
   try {
     let createdReading;
 
-    await session.withTransaction(async () => {
-      const machine = await Machine.findOne({
-        machineId
-      }).session(session);
+    await session.withTransaction(
+      async () => {
+        /*
+         * Re-check the machine inside
+         * the transaction to protect
+         * against race conditions.
+         */
+        const currentMachine =
+          await Machine.findOne({
+            machineId
+          }).session(session);
 
-      if (!machine) {
-        const error = new Error(
-          `Machine ${machineId} not found`
-        );
+        if (!currentMachine) {
+          const error = new Error(
+            `Machine ${machineId} not found`
+          );
 
-        error.statusCode = 404;
+          error.statusCode = 404;
 
-        throw error;
-      }
+          throw error;
+        }
 
-      const readings = await SensorReading.create(
-        [
+        /*
+         * Save sensor reading + AI results.
+         */
+        const readings =
+          await SensorReading.create(
+            [
+              {
+                machineId:
+                  currentMachine._id,
+
+                temperature,
+                vibration,
+                pressure,
+                rpm,
+                current,
+
+                healthScore,
+
+                isAnomaly,
+
+                anomalyScore,
+
+                riskLevel,
+
+                recordedAt:
+                  recordedAt ||
+                  new Date()
+              }
+            ],
+            {
+              session
+            }
+          );
+
+        createdReading =
+          readings[0];
+
+        /*
+         * Update machine's latest state.
+         */
+        await Machine.updateOne(
           {
-            machineId: machine._id,
-            temperature,
-            vibration,
-            pressure,
-            rpm,
-            current,
-            recordedAt: recordedAt || new Date()
+            _id:
+              currentMachine._id
+          },
+          {
+            $set: {
+              healthScore,
+
+              status:
+                machineStatus,
+
+              failureProbability:
+                currentMachine.failureProbability,
+
+              "latestSensorData.temperature":
+                temperature,
+
+              "latestSensorData.vibration":
+                vibration,
+
+              "latestSensorData.pressure":
+                pressure,
+
+              "latestSensorData.rpm":
+                rpm,
+
+              "latestSensorData.current":
+                current,
+
+              "latestSensorData.recordedAt":
+                createdReading.recordedAt
+            }
+          },
+          {
+            session
           }
-        ],
-        { session }
-      );
-
-      createdReading = readings[0];
-
-      await Machine.updateOne(
-        { _id: machine._id },
-        {
-          $set: {
-            "latestSensorData.temperature":
-              temperature,
-
-            "latestSensorData.vibration":
-              vibration,
-
-            "latestSensorData.pressure":
-              pressure,
-
-            "latestSensorData.rpm":
-              rpm,
-
-            "latestSensorData.current":
-              current,
-
-            "latestSensorData.recordedAt":
-              createdReading.recordedAt
-          }
-        },
-        { session }
-      );
-    });
+        );
+      }
+    );
 
     return createdReading;
   } finally {
@@ -86,9 +252,10 @@ const getSensorReadings = async (
   machineId,
   limit = 50
 ) => {
-  const machine = await Machine.findOne({
-    machineId
-  }).lean();
+  const machine =
+    await Machine.findOne({
+      machineId
+    }).lean();
 
   if (!machine) {
     const error = new Error(
@@ -101,9 +268,12 @@ const getSensorReadings = async (
   }
 
   return SensorReading.find({
-    machineId: machine._id
+    machineId:
+      machine._id
   })
-    .sort({ recordedAt: -1 })
+    .sort({
+      recordedAt: -1
+    })
     .limit(limit)
     .lean();
 };
@@ -111,9 +281,10 @@ const getSensorReadings = async (
 const getLatestSensorReading = async (
   machineId
 ) => {
-  const machine = await Machine.findOne({
-    machineId
-  }).lean();
+  const machine =
+    await Machine.findOne({
+      machineId
+    }).lean();
 
   if (!machine) {
     const error = new Error(
@@ -126,9 +297,12 @@ const getLatestSensorReading = async (
   }
 
   return SensorReading.findOne({
-    machineId: machine._id
+    machineId:
+      machine._id
   })
-    .sort({ recordedAt: -1 })
+    .sort({
+      recordedAt: -1
+    })
     .lean();
 };
 

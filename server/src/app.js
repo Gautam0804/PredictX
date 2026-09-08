@@ -9,6 +9,7 @@ const dashboardRoutes = require("./routes/dashboard.routes");
 const predictionRoutes = require("./routes/prediction.routes");
 const errorHandler = require("./middleware/error.middleware");
 const sensorRoutes = require("./routes/sensor.routes");
+const machineHealthRoutes = require("./routes/machineHealth.routes");
 const app = express();
 
 app.use(
@@ -36,6 +37,10 @@ app.use("/api/machines", machineRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/predictions", predictionRoutes);
 app.use("/api/sensors", sensorRoutes);
+app.use(
+  "/api/machine-health",
+  machineHealthRoutes
+);
 
 app.use(errorHandler);
 

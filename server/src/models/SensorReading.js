@@ -39,6 +39,35 @@ const sensorReadingSchema = new mongoose.Schema(
       min: 0
     },
 
+    // AI-generated information
+    healthScore: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: null
+    },
+
+    isAnomaly: {
+      type: Boolean,
+      default: false
+    },
+
+    anomalyScore: {
+      type: Number,
+      default: null
+    },
+
+    riskLevel: {
+      type: String,
+      enum: [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      default: "LOW"
+    },
+
     recordedAt: {
       type: Date,
       default: Date.now,
