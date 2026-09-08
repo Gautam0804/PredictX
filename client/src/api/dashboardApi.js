@@ -48,3 +48,45 @@ export const getMachineHealth = async (
     `/machine-health/${machineId}`
   );
 };
+
+export const createPrediction = async (
+  machineId
+) => {
+  const response = await fetch(
+    `${API_BASE_URL}/predictions/${machineId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  if (!response.ok) {
+    const message =
+      await response.text();
+
+    throw new Error(
+      `Prediction request failed: ${response.status} ${message}`
+    );
+  }
+
+  return response.json();
+};
+
+export const getLatestPrediction = async (
+  machineId
+) => {
+  return request(
+    `/predictions/${machineId}/latest`
+  );
+};
+
+export const getPredictionHistory = async (
+  machineId,
+  limit = 20
+) => {
+  return request(
+    `/predictions/${machineId}?limit=${limit}`
+  );
+};

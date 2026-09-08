@@ -7,7 +7,7 @@ import AIPrediction from "./AIPrediction";
 import SensorTrends from "./SensorTrends";
 import RecentAlerts from "./RecentAlerts";
 import AIInsight from "./AIInsight";
-
+import PredictionHistory from "./PredictionHistory";
 import { getDashboardData } from "../../api/dashboardApi";
 
 function Dashboard() {
@@ -122,6 +122,9 @@ function Dashboard() {
         />
       </section>
 
+<PredictionHistory
+  machines={dashboardData?.machines || []}
+/>
       <AIInsight
         machines={dashboardData?.machines || []}
       />

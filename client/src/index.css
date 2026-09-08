@@ -2348,3 +2348,283 @@ img {
   outline: none;
   border-color: #6b7280;
 }
+
+.ai-prediction-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.prediction-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prediction-score strong {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.prediction-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.prediction-risk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.prediction-risk-badge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.prediction-risk-badge.low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.prediction-risk-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.prediction-risk-badge.high {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.prediction-risk-badge.critical {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.prediction-recommendation p {
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+.prediction-button {
+  margin-top: 16px;
+}
+
+.prediction-error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.prediction-history-card {
+  margin-top: 20px;
+}
+
+.prediction-history-chart {
+  width: 100%;
+  min-height: 280px;
+}
+
+/* ================================
+   AI PREDICTION
+================================ */
+
+.ai-prediction-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-prediction-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Main prediction */
+
+.prediction-main {
+  text-align: center;
+  padding: 12px 0 4px;
+}
+
+.prediction-main-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.prediction-main-value {
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.prediction-risk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 5px 12px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.prediction-risk-badge.low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.prediction-risk-badge.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.prediction-risk-badge.high {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.prediction-risk-badge.critical {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Probability bar */
+
+.prediction-progress-section {
+  width: 100%;
+}
+
+.prediction-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 8px;
+
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.prediction-progress {
+  width: 100%;
+  height: 7px;
+
+  background: #eef2f7;
+
+  border-radius: 999px;
+
+  overflow: hidden;
+}
+
+.prediction-progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  transition: width 0.4s ease;
+}
+
+.prediction-progress-fill.low {
+  background: #22c55e;
+}
+
+.prediction-progress-fill.medium {
+  background: #f59e0b;
+}
+
+.prediction-progress-fill.high {
+  background: #f97316;
+}
+
+.prediction-progress-fill.critical {
+  background: #ef4444;
+}
+
+/* Recommendation */
+
+.prediction-recommendation {
+  padding: 13px 14px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 10px;
+
+  background: #f9fafb;
+}
+
+.recommendation-label {
+  font-size: 11px;
+  font-weight: 700;
+
+  color: #374151;
+
+  margin-bottom: 5px;
+}
+
+.prediction-recommendation p {
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: #6b7280;
+}
+
+/* Button */
+
+.prediction-button {
+  width: 100%;
+  margin-top: 0;
+}
+
+/* Loading */
+
+.ai-prediction-loading {
+  min-height: 300px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Error */
+
+.prediction-error {
+  padding: 9px 12px;
+
+  border-radius: 8px;
+
+  background: #fef2f2;
+
+  color: #b91c1c;
+
+  font-size: 12px;
+}
+
+/* Timestamp */
+
+.prediction-timestamp {
+  text-align: center;
+
+  font-size: 10px;
+
+  color: #9ca3af;
+}
