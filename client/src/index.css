@@ -2332,3 +2332,19 @@ img {
     animation-iteration-count: 1 !important;
   }
 }
+
+.machine-selector {
+  min-width: 120px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.machine-selector:focus {
+  outline: none;
+  border-color: #6b7280;
+}

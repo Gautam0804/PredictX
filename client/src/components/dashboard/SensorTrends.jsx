@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   LineChart,
   Line,
@@ -11,14 +12,32 @@ import {
 
 import { getSensorReadings } from "../../api/dashboardApi";
 
-function SensorTrends() {
+function SensorTrends({ machines = [] }) {
+  const [selectedMachine, setSelectedMachine] =
+    useState("");
+
   const [readings, setReadings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const machineId = "MCH-003";
-
+  // Select the first available machine automatically
   useEffect(() => {
+    if (
+      machines.length > 0 &&
+      !selectedMachine
+    ) {
+      setSelectedMachine(
+        machines[0].machineId
+      );
+    }
+  }, [machines, selectedMachine]);
+
+  // Load sensor data and refresh every 30 seconds
+  useEffect(() => {
+    if (!selectedMachine) {
+      return;
+    }
+
     const loadSensorData = async () => {
       try {
         setLoading(true);
@@ -26,7 +45,7 @@ function SensorTrends() {
 
         const response =
           await getSensorReadings(
-            machineId,
+            selectedMachine,
             20
           );
 
@@ -56,27 +75,57 @@ function SensorTrends() {
         setError(
           "Unable to load sensor data."
         );
+
+        setReadings([]);
       } finally {
         setLoading(false);
       }
     };
 
+    // Load immediately
     loadSensorData();
-  }, []);
+
+    // Refresh every 30 seconds
+    const refreshInterval = setInterval(
+      loadSensorData,
+      30000
+    );
+
+    // Cleanup interval
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [selectedMachine]);
 
   return (
     <section className="dashboard-card sensor-trends-card">
       <div className="card-header">
         <div>
           <h3>Sensor Trends</h3>
+
           <p>
             Temperature and vibration history
           </p>
         </div>
 
-        <span className="sensor-machine-label">
-          {machineId}
-        </span>
+        <select
+          value={selectedMachine}
+          onChange={(event) =>
+            setSelectedMachine(
+              event.target.value
+            )
+          }
+          className="machine-selector"
+        >
+          {machines.map((machine) => (
+            <option
+              key={machine.machineId}
+              value={machine.machineId}
+            >
+              {machine.machineId}
+            </option>
+          ))}
+        </select>
       </div>
 
       {loading && (
@@ -95,7 +144,8 @@ function SensorTrends() {
         !error &&
         readings.length === 0 && (
           <div className="chart-empty-state">
-            No sensor readings available.
+            No sensor readings available for
+            this machine.
           </div>
         )}
 

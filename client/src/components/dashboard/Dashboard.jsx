@@ -113,7 +113,9 @@ function Dashboard() {
       </section>
 
       <section className="bottom-grid">
-        <SensorTrends />
+       <SensorTrends
+  machines={dashboardData?.machines || []}
+/>
 
         <RecentAlerts
           machines={dashboardData?.machines || []}
