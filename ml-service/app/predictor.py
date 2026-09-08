@@ -3,13 +3,67 @@ import numpy as np
 from .model import load_model
 
 
-FEATURES = [
-    "temperature",
-    "vibration",
-    "pressure",
-    "rpm",
-    "current"
-]
+NORMAL_VALUES = {
+    "temperature": 70,
+    "vibration": 2,
+    "pressure": 100,
+    "rpm": 1500,
+    "current": 20
+}
+
+
+def calculate_deviations(
+    temperature,
+    vibration,
+    pressure,
+    rpm,
+    current
+):
+    return {
+        "temperature_deviation": abs(
+            temperature - NORMAL_VALUES["temperature"]
+        ),
+
+        "vibration_deviation": abs(
+            vibration - NORMAL_VALUES["vibration"]
+        ),
+
+        "pressure_deviation": abs(
+            pressure - NORMAL_VALUES["pressure"]
+        ),
+
+        "rpm_deviation": abs(
+            rpm - NORMAL_VALUES["rpm"]
+        ),
+
+        "current_deviation": abs(
+            current - NORMAL_VALUES["current"]
+        )
+    }
+
+
+def build_features(sensor_data):
+    deviations = calculate_deviations(
+        sensor_data.temperature,
+        sensor_data.vibration,
+        sensor_data.pressure,
+        sensor_data.rpm,
+        sensor_data.current
+    )
+
+    return np.array([[
+        sensor_data.temperature,
+        sensor_data.vibration,
+        sensor_data.pressure,
+        sensor_data.rpm,
+        sensor_data.current,
+
+        deviations["temperature_deviation"],
+        deviations["vibration_deviation"],
+        deviations["pressure_deviation"],
+        deviations["rpm_deviation"],
+        deviations["current_deviation"]
+    ]])
 
 
 def calculate_health_score(
@@ -52,7 +106,10 @@ def calculate_health_score(
         + current_score
     ) / 5
 
-    return round(max(0, min(100, health)), 2)
+    return round(
+        max(0, min(100, health)),
+        2
+    )
 
 
 def get_risk_level(probability):
@@ -70,10 +127,25 @@ def get_risk_level(probability):
 
 def get_recommendation(risk_level):
     recommendations = {
-        "LOW": "Machine operating normally. Continue routine monitoring.",
-        "MEDIUM": "Increase monitoring frequency and inspect machine condition.",
-        "HIGH": "Schedule preventive maintenance and inspect critical components.",
-        "CRITICAL": "Immediate inspection required. Consider taking the machine offline."
+        "LOW": (
+            "Machine operating normally. "
+            "Continue routine monitoring."
+        ),
+
+        "MEDIUM": (
+            "Increase monitoring frequency "
+            "and inspect machine condition."
+        ),
+
+        "HIGH": (
+            "Schedule preventive maintenance "
+            "and inspect critical components."
+        ),
+
+        "CRITICAL": (
+            "Immediate inspection required. "
+            "Consider taking the machine offline."
+        )
     }
 
     return recommendations[risk_level]
@@ -82,18 +154,18 @@ def get_recommendation(risk_level):
 def predict_failure(sensor_data):
     model = load_model()
 
-    features = np.array([[
-        sensor_data.temperature,
-        sensor_data.vibration,
-        sensor_data.pressure,
-        sensor_data.rpm,
-        sensor_data.current
-    ]])
+    features = build_features(
+        sensor_data
+    )
 
     if model is not None:
-        probabilities = model.predict_proba(features)[0]
+        probabilities = model.predict_proba(
+            features
+        )[0]
 
-        failure_probability = float(probabilities[1])
+        failure_probability = float(
+            probabilities[1]
+        )
     else:
         failure_probability = 0.0
 
@@ -105,13 +177,23 @@ def predict_failure(sensor_data):
         sensor_data.current
     )
 
-    risk_level = get_risk_level(failure_probability)
+    risk_level = get_risk_level(
+        failure_probability
+    )
 
-    recommendation = get_recommendation(risk_level)
+    recommendation = get_recommendation(
+        risk_level
+    )
 
     return {
-        "failure_probability": round(failure_probability, 4),
+        "failure_probability": round(
+            failure_probability,
+            4
+        ),
+
         "risk_level": risk_level,
+
         "health_score": health_score,
+
         "recommendation": recommendation
     }

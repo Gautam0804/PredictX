@@ -1,7 +1,7 @@
 import os
 
+import joblib
 import numpy as np
-import pandas as pd
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
@@ -12,75 +12,154 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-from .model import save_model
-
 
 RANDOM_STATE = 42
 
+MODEL_PATH = os.path.join(
+    os.path.dirname(
+        os.path.dirname(__file__)
+    ),
+    "models",
+    "failure_model.joblib"
+)
 
-def generate_dataset(n_samples=5000):
-    rng = np.random.default_rng(RANDOM_STATE)
 
-    temperature = rng.normal(70, 8, n_samples)
-    vibration = rng.normal(2.2, 0.8, n_samples)
-    pressure = rng.normal(100, 8, n_samples)
-    rpm = rng.normal(1500, 180, n_samples)
-    current = rng.normal(20, 4, n_samples)
+NORMAL_VALUES = {
+    "temperature": 70,
+    "vibration": 2,
+    "pressure": 100,
+    "rpm": 1500,
+    "current": 20
+}
 
-    # Failure score based on abnormal sensor behavior.
-    failure_score = (
-        (temperature > 82).astype(int)
-        + (vibration > 3.5).astype(int)
-        + (pressure > 112).astype(int)
-        + (rpm < 1250).astype(int)
-        + (rpm > 1750).astype(int)
-        + (current > 27).astype(int)
+
+def generate_dataset(
+    count=5000,
+    random_state=42
+):
+    rng = np.random.default_rng(
+        random_state
     )
 
-    # Add a small amount of randomness.
-    failure_score += rng.binomial(1, 0.08, n_samples)
-
-    failure = (failure_score >= 2).astype(int)
-
-    return pd.DataFrame({
-        "temperature": temperature,
-        "vibration": vibration,
-        "pressure": pressure,
-        "rpm": rpm,
-        "current": current,
-        "failure": failure
-    })
-
-
-def train():
-    print("Generating training dataset...")
-
-    df = generate_dataset()
-
-    print(f"Dataset shape: {df.shape}")
-    print("\nFailure distribution:")
-    print(df["failure"].value_counts())
-
-    features = [
-        "temperature",
-        "vibration",
-        "pressure",
-        "rpm",
-        "current"
-    ]
-
-    X = df[features]
-    y = df["failure"]
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        random_state=RANDOM_STATE,
-        stratify=y
+    temperature = rng.normal(
+        70, 5, count
     )
 
-    print("\nTraining Random Forest...")
+    vibration = rng.normal(
+        2, 0.4, count
+    )
+
+    pressure = rng.normal(
+        100, 5, count
+    )
+
+    rpm = rng.normal(
+        1500, 80, count
+    )
+
+    current = rng.normal(
+        20, 2, count
+    )
+
+    temperature_deviation = abs(
+        temperature - NORMAL_VALUES["temperature"]
+    )
+
+    vibration_deviation = abs(
+        vibration - NORMAL_VALUES["vibration"]
+    )
+
+    pressure_deviation = abs(
+        pressure - NORMAL_VALUES["pressure"]
+    )
+
+    rpm_deviation = abs(
+        rpm - NORMAL_VALUES["rpm"]
+    )
+
+    current_deviation = abs(
+        current - NORMAL_VALUES["current"]
+    )
+
+    X = np.column_stack([
+        temperature,
+        vibration,
+        pressure,
+        rpm,
+        current,
+
+        temperature_deviation,
+        vibration_deviation,
+        pressure_deviation,
+        rpm_deviation,
+        current_deviation
+    ])
+
+    abnormal_conditions = (
+        (temperature > 80)
+        | (temperature < 60)
+    ).astype(int)
+
+    abnormal_conditions += (
+        vibration > 3.5
+    ).astype(int)
+
+    abnormal_conditions += (
+        (pressure > 110)
+        | (pressure < 90)
+    ).astype(int)
+
+    abnormal_conditions += (
+        (rpm > 1650)
+        | (rpm < 1350)
+    ).astype(int)
+
+    abnormal_conditions += (
+        (current > 26)
+        | (current < 14)
+    ).astype(int)
+
+    y = (
+        abnormal_conditions >= 2
+    ).astype(int)
+
+    noise = rng.random(count) < 0.05
+
+    y = np.where(
+        noise,
+        1 - y,
+        y
+    )
+
+    return X, y
+
+
+def train_model():
+    print("Generating training data...")
+
+    X, y = generate_dataset()
+
+    print(
+        f"Dataset shape: {X.shape}"
+    )
+
+    print(
+        f"Failure samples: {y.sum()}"
+    )
+
+    print(
+        f"Normal samples: {(y == 0).sum()}"
+    )
+
+    X_train, X_test, y_train, y_test = (
+        train_test_split(
+            X,
+            y,
+            test_size=0.2,
+            random_state=RANDOM_STATE,
+            stratify=y
+        )
+    )
 
     model = RandomForestClassifier(
         n_estimators=200,
@@ -89,44 +168,96 @@ def train():
         n_jobs=-1
     )
 
-    model.fit(X_train, y_train)
+    print("Training Random Forest...")
 
-    predictions = model.predict(X_test)
-    probabilities = model.predict_proba(X_test)[:, 1]
-
-    accuracy = accuracy_score(y_test, predictions)
-    roc_auc = roc_auc_score(y_test, probabilities)
-
-    print("\n==============================")
-    print("MODEL EVALUATION")
-    print("==============================")
-
-    print(f"Accuracy : {accuracy:.4f}")
-    print(f"ROC-AUC  : {roc_auc:.4f}")
-
-    print("\nClassification Report:")
-    print(classification_report(y_test, predictions))
-
-    print("Confusion Matrix:")
-    print(confusion_matrix(y_test, predictions))
-
-    print("\nFeature Importance:")
-
-    importance = pd.DataFrame({
-        "feature": features,
-        "importance": model.feature_importances_
-    }).sort_values(
-        "importance",
-        ascending=False
+    model.fit(
+        X_train,
+        y_train
     )
 
-    print(importance.to_string(index=False))
+    predictions = model.predict(
+        X_test
+    )
 
-    save_model(model)
+    probabilities = model.predict_proba(
+        X_test
+    )[:, 1]
 
-    print("\nModel saved successfully.")
-    print("Location: models/failure_model.joblib")
+    accuracy = accuracy_score(
+        y_test,
+        predictions
+    )
+
+    roc_auc = roc_auc_score(
+        y_test,
+        probabilities
+    )
+
+    print("\nModel Evaluation")
+    print("----------------")
+    print(
+        f"Accuracy: {accuracy:.4f}"
+    )
+
+    print(
+        f"ROC-AUC: {roc_auc:.4f}"
+    )
+
+    print("\nClassification Report")
+    print(
+        classification_report(
+            y_test,
+            predictions
+        )
+    )
+
+    print("Confusion Matrix")
+
+    print(
+        confusion_matrix(
+            y_test,
+            predictions
+        )
+    )
+
+    feature_names = [
+        "temperature",
+        "vibration",
+        "pressure",
+        "rpm",
+        "current",
+
+        "temperature_deviation",
+        "vibration_deviation",
+        "pressure_deviation",
+        "rpm_deviation",
+        "current_deviation"
+    ]
+
+    print("\nFeature Importance")
+
+    for name, importance in zip(
+        feature_names,
+        model.feature_importances_
+    ):
+        print(
+            f"{name}: {importance:.4f}"
+        )
+
+    os.makedirs(
+        os.path.dirname(MODEL_PATH),
+        exist_ok=True
+    )
+
+    joblib.dump(
+        model,
+        MODEL_PATH
+    )
+
+    print(
+        f"\nModel saved to: {MODEL_PATH}"
+    )
 
 
 if __name__ == "__main__":
-    train()
+    train_model()

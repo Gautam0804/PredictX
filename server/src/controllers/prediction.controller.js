@@ -1,47 +1,34 @@
-const Machine = require("../models/Machine");
 const {
-  predictMachine
-} = require("../services/machine.service");
+  createPrediction,
+  getPredictionHistory,
+  getLatestPrediction
+} = require("../services/prediction.service");
 
-const predictForMachine = async (req, res, next) => {
+const predictForMachine = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const machine = await Machine.findOne({
-      machineId: req.params.machineId
-    }).lean();
+    const result =
+      await createPrediction(
+        req.params.machineId
+      );
 
-    if (!machine) {
-      return res.status(404).json({
-        success: false,
-        message: "Machine not found"
-      });
-    }
-
-    const prediction = await predictMachine(machine);
-
-    await Machine.updateOne(
-      { _id: machine._id },
-      {
-        $set: {
-          failureProbability:
-            prediction.failure_probability,
-          healthScore:
-            prediction.health_score,
-          status:
-            prediction.risk_level === "CRITICAL"
-              ? "CRITICAL"
-              : prediction.risk_level === "HIGH"
-                ? "AT_RISK"
-                : "HEALTHY"
-        }
-      }
-    );
-
-    res.status(200).json({
+    res.status(201).json({
       success: true,
+
       data: {
-        machineId: machine.machineId,
-        machineName: machine.name,
-        ...prediction
+        machineId:
+          req.params.machineId,
+
+        ...result.prediction,
+
+        predictionId:
+          result.predictionRecord._id,
+
+        predictedAt:
+          result.predictionRecord.predictedAt
       }
     });
   } catch (error) {
@@ -49,6 +36,69 @@ const predictForMachine = async (req, res, next) => {
   }
 };
 
+const getPredictions = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const limit = Math.min(
+      Math.max(
+        Number.parseInt(
+          req.query.limit,
+          10
+        ) || 50,
+        1
+      ),
+      200
+    );
+
+    const predictions =
+      await getPredictionHistory(
+        req.params.machineId,
+        limit
+      );
+
+    res.status(200).json({
+      success: true,
+      count: predictions.length,
+      data: predictions
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getLatest = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const prediction =
+      await getLatestPrediction(
+        req.params.machineId
+      );
+
+    if (!prediction) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No predictions found for this machine"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: prediction
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-  predictForMachine
+  predictForMachine,
+  getPredictions,
+  getLatest
 };
