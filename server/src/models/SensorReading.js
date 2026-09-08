@@ -11,27 +11,32 @@ const sensorReadingSchema = new mongoose.Schema(
 
     temperature: {
       type: Number,
-      required: true
+      required: true,
+      min: 0
     },
 
     vibration: {
       type: Number,
-      required: true
+      required: true,
+      min: 0
     },
 
     pressure: {
       type: Number,
-      required: true
+      required: true,
+      min: 0
     },
 
     rpm: {
       type: Number,
-      required: true
+      required: true,
+      min: 0
     },
 
     current: {
       type: Number,
-      required: true
+      required: true,
+      min: 0
     },
 
     recordedAt: {
@@ -44,6 +49,11 @@ const sensorReadingSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+sensorReadingSchema.index({
+  machineId: 1,
+  recordedAt: -1
+});
 
 module.exports = mongoose.model(
   "SensorReading",
