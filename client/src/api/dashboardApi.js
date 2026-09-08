@@ -40,3 +40,11 @@ export const getLatestSensorReading = async (
     `/sensors/${machineId}/latest`
   );
 };
+
+export const getMachineHealth = async (
+  machineId
+) => {
+  return request(
+    `/machine-health/${machineId}`
+  );
+};
