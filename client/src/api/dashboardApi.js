@@ -1,11 +1,16 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000/api";
 
 const request = async (endpoint) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+  const response = await fetch(
+    `${API_BASE_URL}${endpoint}`
+  );
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    throw new Error(
+      `API request failed: ${response.status}`
+    );
   }
 
   return response.json();
@@ -17,4 +22,21 @@ export const getDashboardData = async () => {
 
 export const getMachines = async () => {
   return request("/machines");
+};
+
+export const getSensorReadings = async (
+  machineId,
+  limit = 50
+) => {
+  return request(
+    `/sensors/${machineId}?limit=${limit}`
+  );
+};
+
+export const getLatestSensorReading = async (
+  machineId
+) => {
+  return request(
+    `/sensors/${machineId}/latest`
+  );
 };
