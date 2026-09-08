@@ -132,24 +132,48 @@ const createReading = async (
       }
     }
 
-    const reading =
-      await createSensorReading({
-        machineId,
-        temperature,
-        vibration,
-        pressure,
-        rpm,
-        current,
-        recordedAt:
-          parsedRecordedAt
-      });
+   const result =
+  await createSensorReading({
+    machineId,
+    temperature,
+    vibration,
+    pressure,
+    rpm,
+    current,
+    recordedAt:
+      parsedRecordedAt
+  });
 
-    res.status(201).json({
-      success: true,
-      message:
-        "Sensor reading recorded successfully",
-      data: reading
-    });
+res.status(201).json({
+  success: true,
+
+  message:
+    "Sensor reading recorded and analyzed successfully",
+
+  data: {
+    reading: result.reading,
+
+    prediction: {
+      failureProbability:
+        result.prediction.failureProbability,
+
+      riskLevel:
+        result.prediction.riskLevel,
+
+      healthScore:
+        result.prediction.healthScore,
+
+      recommendation:
+        result.prediction.recommendation,
+
+      modelVersion:
+        result.prediction.modelVersion,
+
+      predictedAt:
+        result.prediction.predictedAt
+    }
+  }
+});
   } catch (error) {
     next(error);
   }

@@ -2628,3 +2628,11 @@ img {
 
   color: #9ca3af;
 }
+.prediction-history-card {
+  margin-top: 20px;
+}
+
+.prediction-history-chart {
+  width: 100%;
+  min-height: 280px;
+}

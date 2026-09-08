@@ -2,12 +2,17 @@ const mongoose = require("mongoose");
 
 const Machine = require("../models/Machine");
 const SensorReading = require("../models/SensorReading");
+const Prediction = require("../models/Prediction");
 
 const {
   calculateHealthScore,
   getRiskLevel,
   getMachineStatus
 } = require("./health.service");
+
+const {
+  predictSensorData
+} = require("./machine.service");
 
 const ML_SERVICE_URL =
   process.env.ML_SERVICE_URL ||
@@ -62,8 +67,8 @@ const createSensorReading = async ({
   recordedAt
 }) => {
   /*
-   * Step 1:
-   * Verify that the machine exists.
+   * Verify machine exists before
+   * calling external ML services.
    */
   const machine =
     await Machine.findOne({
@@ -81,9 +86,9 @@ const createSensorReading = async ({
   }
 
   /*
-   * Step 2:
-   * Calculate health before opening
-   * the database transaction.
+   * -------------------------------
+   * 1. Calculate health
+   * -------------------------------
    */
   const healthScore =
     calculateHealthScore({
@@ -95,9 +100,9 @@ const createSensorReading = async ({
     });
 
   /*
-   * Step 3:
-   * Ask the ML service for anomaly
-   * detection.
+   * -------------------------------
+   * 2. Detect anomaly
+   * -------------------------------
    */
   const anomaly =
     await detectAnomaly({
@@ -115,8 +120,36 @@ const createSensorReading = async ({
     Number(anomaly.anomaly_score);
 
   /*
-   * Step 4:
-   * Calculate machine risk.
+   * -------------------------------
+   * 3. Predict failure
+   * -------------------------------
+   *
+   * IMPORTANT:
+   * Use the NEW sensor reading,
+   * not machine.latestSensorData.
+   */
+  const prediction =
+    await predictSensorData({
+      temperature,
+      vibration,
+      pressure,
+      rpm,
+      current
+    });
+
+  const failureProbability =
+    Number(
+      prediction.failure_probability
+    );
+
+  const predictionRiskLevel =
+    prediction.risk_level;
+
+  /*
+   * Risk for sensor reading:
+   *
+   * We keep the ML prediction as the
+   * primary failure-risk signal.
    */
   const riskLevel =
     getRiskLevel({
@@ -124,28 +157,39 @@ const createSensorReading = async ({
       isAnomaly
     });
 
+  /*
+   * If ML predicts a more serious
+   * failure level, don't downgrade it.
+   */
+  const finalRiskLevel =
+    getHighestRiskLevel(
+      riskLevel,
+      predictionRiskLevel
+    );
+
   const machineStatus =
     getMachineStatus(
-      riskLevel
+      finalRiskLevel
     );
 
   /*
-   * Step 5:
-   * Now start the MongoDB transaction.
+   * -------------------------------
+   * 4. MongoDB transaction
+   * -------------------------------
+   *
+   * External ML work is already done.
+   * Only database operations are inside
+   * the transaction.
    */
   const session =
     await mongoose.startSession();
 
   try {
     let createdReading;
+    let createdPrediction;
 
     await session.withTransaction(
       async () => {
-        /*
-         * Re-check the machine inside
-         * the transaction to protect
-         * against race conditions.
-         */
         const currentMachine =
           await Machine.findOne({
             machineId
@@ -162,7 +206,7 @@ const createSensorReading = async ({
         }
 
         /*
-         * Save sensor reading + AI results.
+         * Save sensor reading.
          */
         const readings =
           await SensorReading.create(
@@ -183,7 +227,8 @@ const createSensorReading = async ({
 
                 anomalyScore,
 
-                riskLevel,
+                riskLevel:
+                  finalRiskLevel,
 
                 recordedAt:
                   recordedAt ||
@@ -197,6 +242,49 @@ const createSensorReading = async ({
 
         createdReading =
           readings[0];
+
+        /*
+         * Save AI prediction history.
+         */
+        const predictions =
+          await Prediction.create(
+            [
+              {
+                machineId:
+                  currentMachine._id,
+
+                failureProbability,
+
+                riskLevel:
+                  predictionRiskLevel,
+
+                healthScore,
+
+                recommendation:
+                  prediction.recommendation,
+
+                modelVersion:
+                  "1.0.0",
+
+                sensorSnapshot: {
+                  temperature,
+                  vibration,
+                  pressure,
+                  rpm,
+                  current
+                },
+
+                predictedAt:
+                  createdReading.recordedAt
+              }
+            ],
+            {
+              session
+            }
+          );
+
+        createdPrediction =
+          predictions[0];
 
         /*
          * Update machine's latest state.
@@ -213,8 +301,7 @@ const createSensorReading = async ({
               status:
                 machineStatus,
 
-              failureProbability:
-                currentMachine.failureProbability,
+              failureProbability,
 
               "latestSensorData.temperature":
                 temperature,
@@ -242,7 +329,10 @@ const createSensorReading = async ({
       }
     );
 
-    return createdReading;
+    return {
+      reading: createdReading,
+      prediction: createdPrediction
+    };
   } finally {
     await session.endSession();
   }
@@ -305,6 +395,28 @@ const getLatestSensorReading = async (
     })
     .lean();
 };
+
+
+/*
+ * Return the more severe risk level.
+ */
+const getHighestRiskLevel = (
+  first,
+  second
+) => {
+  const severity = {
+    LOW: 1,
+    MEDIUM: 2,
+    HIGH: 3,
+    CRITICAL: 4
+  };
+
+  return severity[first] >=
+    severity[second]
+    ? first
+    : second;
+};
+
 
 module.exports = {
   createSensorReading,

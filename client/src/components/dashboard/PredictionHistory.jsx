@@ -38,71 +38,63 @@ function PredictionHistory({
         machines[0].machineId
       );
     }
-  }, [
-    machines,
-    selectedMachine
-  ]);
+  }, [machines, selectedMachine]);
 
   useEffect(() => {
     if (!selectedMachine) {
       return;
     }
 
-    const loadPredictionHistory =
-      async () => {
-        try {
-          setLoading(true);
-          setError("");
+    const loadHistory = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-          const response =
-            await getPredictionHistory(
-              selectedMachine,
-              20
-            );
-
-          const formattedData =
-            [...(response.data || [])]
-              .reverse()
-              .map((prediction) => ({
-                time: new Date(
-                  prediction.predictedAt
-                ).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit"
-                }),
-
-                probability:
-                  Math.round(
-                    (
-                      prediction.failureProbability ??
-                      0
-                    ) * 100
-                  ),
-
-                risk:
-                  prediction.riskLevel
-              }));
-
-          setPredictions(
-            formattedData
-          );
-        } catch (err) {
-          console.error(
-            "Prediction history error:",
-            err
+        const response =
+          await getPredictionHistory(
+            selectedMachine,
+            20
           );
 
-          setError(
-            "Unable to load prediction history."
-          );
+        const formatted =
+          [...(response.data || [])]
+            .reverse()
+            .map((item) => ({
+              time: new Date(
+                item.predictedAt
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+              }),
 
-          setPredictions([]);
-        } finally {
-          setLoading(false);
-        }
-      };
+              probability: Math.round(
+                (
+                  item.failureProbability ?? 0
+                ) * 100
+              ),
 
-    loadPredictionHistory();
+              riskLevel:
+                item.riskLevel
+            }));
+
+        setPredictions(formatted);
+      } catch (err) {
+        console.error(
+          "Prediction history error:",
+          err
+        );
+
+        setError(
+          "Unable to load prediction history."
+        );
+
+        setPredictions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistory();
   }, [selectedMachine]);
 
   return (
@@ -125,16 +117,14 @@ function PredictionHistory({
           }
           className="machine-selector"
         >
-          {machines.map(
-            (machine) => (
-              <option
-                key={machine.machineId}
-                value={machine.machineId}
-              >
-                {machine.machineId}
-              </option>
-            )
-          )}
+          {machines.map((machine) => (
+            <option
+              key={machine.machineId}
+              value={machine.machineId}
+            >
+              {machine.machineId}
+            </option>
+          ))}
         </select>
       </div>
 
