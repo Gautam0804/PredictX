@@ -1,14 +1,16 @@
 # PredictX — AI-Powered Predictive Maintenance Platform
 
-PredictX is a full-stack AI-powered predictive maintenance platform designed to help factories detect abnormal machine behavior, predict potential equipment failures, and support proactive maintenance decisions.
+> An AI-powered predictive maintenance platform that analyzes machine sensor data, estimates equipment failure risk, monitors machine health, and supports proactive maintenance decisions.
 
-The platform combines a React dashboard, Node.js/Express backend, MongoDB database, and Python/FastAPI machine-learning service.
+PredictX combines **React, Node.js, Express.js, MongoDB, Python, FastAPI, and Machine Learning** into a full-stack predictive-maintenance system.
+
+The goal is to move from **reactive maintenance** to **proactive, data-driven maintenance** by identifying potential equipment problems before they result in unexpected downtime.
 
 ---
 
-## 🚀 Project Overview
+## 🚀 Overview
 
-Unexpected machine failures can cause:
+Unexpected machine failures can result in:
 
 - Production downtime
 - Emergency maintenance costs
@@ -24,194 +26,189 @@ PredictX addresses this problem by analyzing machine sensor data such as:
 - RPM
 - Electrical current
 
-The system uses machine-learning models to estimate failure probability, determine machine risk level, calculate a machine health score, and provide maintenance recommendations.
+The system uses this information to estimate **failure probability**, determine **risk level**, calculate a **machine health score**, and generate **maintenance recommendations**.
 
 ---
 
-## 🎯 Core Objective
-
-The goal of PredictX is to transform traditional reactive maintenance into proactive predictive maintenance.
+## 🎯 Core Concept
 
 ### Traditional Maintenance
 
 ```text
 Machine
    ↓
-Runs normally
+Normal Operation
    ↓
-Unexpected failure
+Unexpected Failure
    ↓
-Production downtime
+Production Downtime
    ↓
-Emergency repair
+Emergency Repair
    ↓
-High cost
-Predictive Maintenance
+Higher Cost
+```
+
+### Predictive Maintenance
+
+```text
 Machine Sensors
       ↓
 Sensor Data
       ↓
 Backend Processing
       ↓
-AI/ML Analysis
+AI / ML Analysis
       ↓
 Failure Probability
       ↓
 Risk Classification
+      ↓
+Machine Health Score
       ↓
 Maintenance Recommendation
       ↓
 Preventive Action
       ↓
 Reduced Unexpected Downtime
-🏗️ System Architecture
+```
+
+---
+
+## 🏗️ Architecture
+
+```text
                          PredictX
                             │
-             ┌──────────────┼──────────────┐
-             │              │              │
-             ▼              ▼              ▼
-        React Frontend   Node.js API    Python ML
-        + JavaScript     + Express.js   + FastAPI
-             │              │              │
-             │              ▼              ▼
-             │          MongoDB        ML Models
-             │              │
-             └──────────────┼──────────────┘
+          ┌─────────────────┼─────────────────┐
+          │                 │                 │
+          ▼                 ▼                 ▼
+   React Frontend     Node.js API       Python ML Service
+   + JavaScript       + Express.js       + FastAPI
+          │                 │                 │
+          │                 ▼                 ▼
+          │              MongoDB          ML Model
+          │                 │
+          └─────────────────┼─────────────────┘
                             │
                          Dashboard
-Production Architecture
+```
+
+### Production Architecture
+
+```text
                          Internet
                             │
                             ▼
-                  ┌───────────────────┐
-                  │ React Application │
-                  │      Vercel       │
-                  └─────────┬─────────┘
+                 ┌─────────────────────┐
+                 │   React Application │
+                 │       Vercel        │
+                 └──────────┬──────────┘
                             │
                             ▼
-                  ┌───────────────────┐
-                  │ Node.js + Express │
-                  │      Render       │
-                  └───────┬─────┬─────┘
+                 ┌─────────────────────┐
+                 │   Node.js/Express   │
+                 │       Render        │
+                 └────────┬─────┬──────┘
                           │     │
                           │     │ HTTP
                           │     ▼
                           │  ┌─────────────────┐
-                          │  │ Python + FastAPI│
+                          │  │ Python/FastAPI  │
                           │  │     Render      │
                           │  └────────┬────────┘
                           │           │
                           │           ▼
-                          │      ML Models
+                          │       ML Model
                           │
                           ▼
-                  ┌───────────────────┐
-                  │   MongoDB Atlas   │
-                  └───────────────────┘
-🛠️ Tech Stack
-Frontend
-React
-JavaScript
-Vite
-CSS
-Recharts
-Lucide React
-Fetch API
-Backend
-Node.js
-Express.js
-MongoDB
-Mongoose
-REST APIs
-Helmet
-CORS
-Morgan
-dotenv
-AI / Machine Learning
-Python
-FastAPI
-NumPy
-Pandas
-Scikit-learn
-Joblib
-Random Forest
-Isolation Forest (planned)
-XGBoost (planned)
-Deployment
-GitHub
-Vercel
-Render
-MongoDB Atlas
-✨ Current Features
+                 ┌─────────────────────┐
+                 │   MongoDB Atlas     │
+                 └─────────────────────┘
+```
 
-The current version establishes the core full-stack and AI/ML pipeline.
+---
 
-📊 Machine Dashboard
+## ✨ Current Features
+
+### 📊 Machine Dashboard
 
 The dashboard provides an operational overview of factory machines.
 
-Current dashboard information includes:
+Current information includes:
 
-Total machines
-Healthy machines
-At-risk machines
-Critical machines
-Machine health scores
-Machine operating status
-Failure probability
-Sensor trend visualization
-Recent machine alerts
-AI-generated insights
-🏭 Machine Management API
+- Total machines
+- Healthy machines
+- At-risk machines
+- Critical machines
+- Machine health scores
+- Machine operating status
+- Failure probability
+- Sensor trend visualization
+- Recent machine alerts
+- AI-generated insights
+
+---
+
+### 🏭 Machine Management
 
 The backend currently provides APIs for retrieving machine information.
 
-Available endpoints:
-
+```http
 GET /api/machines
 GET /api/machines/:id
+```
 
-Machine records contain information such as:
+Machine records include information such as:
 
-Machine ID
-Machine Name
-Machine Type
-Location
-Status
-Health Score
-Failure Probability
-Latest Sensor Data
-Maintenance Information
-❤️ Health Monitoring
+- Machine ID
+- Machine name
+- Machine type
+- Location
+- Operating status
+- Health score
+- Failure probability
+- Latest sensor data
+- Maintenance information
 
-Machine health is represented using a score from 0–100.
+---
+
+### ❤️ Machine Health Monitoring
+
+Machine health is represented using a score from **0–100**.
 
 Example:
 
+```text
 94 → Healthy
 72 → At Risk
 38 → Critical
+```
 
 The current development health score is calculated from machine sensor conditions.
 
-🤖 AI Failure Prediction
+---
 
-PredictX includes a Python machine-learning service exposed through FastAPI.
+### 🤖 AI Failure Prediction
 
-The Node.js backend sends sensor information to the ML service:
+PredictX includes a separate Python machine-learning service exposed through FastAPI.
 
-Node.js
-   ↓
+The prediction flow is:
+
+```text
+Node.js Backend
+      ↓
 POST /predict
-   ↓
+      ↓
 Python FastAPI
-   ↓
-ML Model
-   ↓
+      ↓
+Machine Learning Model
+      ↓
 Prediction
+```
 
 Example sensor input:
 
+```json
 {
   "temperature": 88,
   "vibration": 4.5,
@@ -219,32 +216,41 @@ Example sensor input:
   "rpm": 1200,
   "current": 30
 }
+```
 
 Example prediction:
 
+```json
 {
   "failure_probability": 0.885,
   "risk_level": "CRITICAL",
   "health_score": 63.5,
   "recommendation": "Immediate inspection required. Consider taking the machine offline."
 }
-🚨 Risk Classification
+```
 
-PredictX currently classifies machine failure risk into:
+---
 
-LOW
-MEDIUM
-HIGH
-CRITICAL
+## 🚨 Risk Classification
+
+PredictX currently classifies machine failure risk into four levels:
+
+| Risk Level | Meaning |
+|---|---|
+| 🟢 LOW | Continue routine monitoring |
+| 🟡 MEDIUM | Increase monitoring and inspect machine condition |
+| 🟠 HIGH | Schedule preventive maintenance |
+| 🔴 CRITICAL | Immediate inspection recommended |
 
 Risk thresholds are currently defined inside the ML prediction service.
 
-🔧 Maintenance Recommendations
+---
 
-The ML service provides recommendations based on predicted risk.
+## 🔧 Maintenance Recommendations
 
-Example:
+The ML service generates recommendations based on the predicted risk level.
 
+```text
 LOW
 → Continue routine monitoring.
 
@@ -256,10 +262,15 @@ HIGH
 
 CRITICAL
 → Immediate inspection required and consider taking the machine offline.
-🧠 Machine Learning Pipeline
+```
 
-The current development ML pipeline uses a Random Forest classifier.
+---
 
+## 🧠 Machine Learning Pipeline
+
+The current development pipeline uses a **Random Forest classifier**.
+
+```text
 Sensor Data
      ↓
 Feature Preparation
@@ -273,22 +284,129 @@ Risk Classification
 Health Score
      ↓
 Maintenance Recommendation
+```
 
-Current model features:
+### Current Model Features
 
-Temperature
-Vibration
-Pressure
-RPM
-Current
+- Temperature
+- Vibration
+- Pressure
+- RPM
+- Electrical current
 
-The development model currently uses synthetic data to validate the end-to-end ML pipeline.
+### Important ML Note
 
-Important: Synthetic training data is used for development and pipeline validation. Model performance from synthetic data should not be interpreted as real-world industrial prediction accuracy.
+The current development model uses **synthetic data** to validate the end-to-end ML pipeline.
 
-A real predictive-maintenance dataset and proper validation will be introduced in a later development phase.
+> Model performance using synthetic data should **not** be interpreted as real-world industrial prediction accuracy.
 
-📁 Project Structure
+A real predictive-maintenance dataset and proper model evaluation are planned for a later development phase.
+
+---
+
+## 🔌 API
+
+### Node.js / Express API
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Backend health check |
+| `GET` | `/api/dashboard` | Dashboard data |
+| `GET` | `/api/machines` | Get all machines |
+| `GET` | `/api/machines/:id` | Get a specific machine |
+| `POST` | `/api/predictions/:machineId` | Generate machine prediction |
+
+### Python / FastAPI API
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/health` | ML service health check |
+| `POST` | `/predict` | Generate ML prediction |
+
+---
+
+## 🔄 End-to-End Prediction Flow
+
+When a user requests a machine prediction:
+
+```text
+React Dashboard
+      ↓
+POST /api/predictions/:machineId
+      ↓
+Node.js + Express
+      ↓
+MongoDB
+      ↓
+Read Latest Sensor Values
+      ↓
+Python FastAPI
+      ↓
+Random Forest Model
+      ↓
+Failure Probability
+      ↓
+Risk Level
+      ↓
+Health Score
+      ↓
+Maintenance Recommendation
+      ↓
+Node.js
+      ↓
+React Dashboard
+```
+
+This architecture keeps the ML workload separated from the main backend and allows the prediction service to evolve independently.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+- React
+- JavaScript
+- Vite
+- CSS
+- Recharts
+- Lucide React
+- Fetch API
+
+### Backend
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- REST APIs
+- Helmet
+- CORS
+- Morgan
+- dotenv
+
+### AI / Machine Learning
+
+- Python
+- FastAPI
+- NumPy
+- Pandas
+- Scikit-learn
+- Joblib
+- Random Forest
+
+### Deployment
+
+- GitHub
+- Vercel
+- Render
+- MongoDB Atlas
+
+---
+
+## 📁 Project Structure
+
+```text
 PredictX/
 │
 ├── client/
@@ -342,186 +460,222 @@ PredictX/
 │
 ├── .gitignore
 └── README.md
-🔌 API Overview
-Backend
-Health Check
-GET /api/health
-Dashboard
-GET /api/dashboard
-Get All Machines
-GET /api/machines
-Get Machine
-GET /api/machines/:id
-Generate Machine Prediction
-POST /api/predictions/:machineId
-🐍 ML Service API
-Health Check
-GET /health
-Prediction
-POST /predict
+```
 
-Example:
+---
 
-{
-  "temperature": 88,
-  "vibration": 4.5,
-  "pressure": 116,
-  "rpm": 1200,
-  "current": 30
-}
-⚙️ Local Development
-Prerequisites
+# ⚙️ Local Development
 
-Install:
+## Prerequisites
 
-Node.js
-npm
-Python 3
-MongoDB
-Git
-1. Clone Repository
-git clone https://github.com/Gautam0804/PredictX.git
-cd PredictX
-2. Frontend Setup
+Make sure you have installed:
+
+- Node.js
+- npm
+- Python 3
+- MongoDB
+- Git
+
+---
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/Gautam0804/predict-x.git
+cd predict-x
+```
+
+> If the repository URL/name has changed, use the current GitHub repository URL.
+
+---
+
+## 2. Frontend Setup
+
+```bash
 cd client
 npm install
 npm run dev
+```
 
 Frontend:
 
+```text
 http://localhost:5173
+```
 
 Create:
 
+```text
 client/.env
+```
 
 Example:
 
+```env
 VITE_API_URL=http://localhost:5000/api
-3. Backend Setup
+```
+
+---
+
+## 3. Backend Setup
+
+```bash
 cd server
 npm install
+```
 
 Create:
 
+```text
 server/.env
+```
 
 Example:
 
+```env
 PORT=5000
 NODE_ENV=development
 MONGODB_URI=mongodb://127.0.0.1:27017/predictx
 CLIENT_URL=http://localhost:5173
 ML_SERVICE_URL=http://localhost:8000
+```
 
-Start backend:
+Start the backend:
 
+```bash
 npm run dev
+```
 
 Backend:
 
+```text
 http://localhost:5000
-4. Database Seed
+```
 
-From the server directory:
+---
 
+## 4. Seed Development Data
+
+From the `server` directory:
+
+```bash
 npm run seed
+```
 
 This creates development machine data for PredictX.
 
-5. ML Service Setup
+---
+
+## 5. ML Service Setup
+
+```bash
 cd ml
-
 python -m venv venv
+```
 
-Windows:
+### Windows
 
+```powershell
 .\venv\Scripts\Activate.ps1
+```
 
 Install dependencies:
 
+```bash
 pip install -r requirements.txt
+```
 
 Train the development model:
 
+```bash
 python -m app.train
+```
 
 Start FastAPI:
 
+```bash
 uvicorn app.main:app --reload --port 8000
+```
 
 ML service:
 
+```text
 http://localhost:8000
-🔄 End-to-End Request Flow
+```
 
-When a user requests a machine prediction:
+---
 
-React Dashboard
-      ↓
-POST /api/predictions/MCH-003
-      ↓
+# ☁️ Deployment
+
+The current deployment architecture is designed around separate services:
+
+```text
+React
+  ↓
+Vercel
+
 Node.js + Express
-      ↓
+  ↓
+Render
+
+Python + FastAPI
+  ↓
+Render
+
 MongoDB
-      ↓
-Read latest sensor values
-      ↓
-Python FastAPI
-      ↓
-Random Forest Model
-      ↓
-Failure Probability
-      ↓
-Risk Level
-      ↓
-Health Score
-      ↓
-Recommendation
-      ↓
-Node.js
-      ↓
-React Dashboard
-🗺️ Development Roadmap
+  ↓
+MongoDB Atlas
+```
 
-PredictX will be developed incrementally as a production-oriented application.
+Environment variables are configured independently for each service.
 
-Phase 1 — Production Baseline
- React dashboard
- Node.js + Express backend
- MongoDB integration
- Machine APIs
- Dashboard API
- Python ML service
- FastAPI prediction endpoint
- Random Forest development model
- Node.js → Python ML integration
- Machine failure prediction
- Risk classification
- Health score
- Maintenance recommendation
-Phase 2 — Sensor Data Platform
- Sensor reading ingestion API
- Historical sensor storage
- Sensor reading validation
- Machine telemetry history
- Real sensor trend charts
- Time-based filtering
- Latest sensor state calculation
-Phase 3 — Prediction Engine
- Prediction history
- Prediction timestamps
- Prediction audit trail
- Batch machine prediction
- Prediction confidence
- Failure prediction history
- Prediction status tracking
-Phase 4 — Anomaly Detection
+**No secrets or credentials should be committed to GitHub.**
 
-Introduce unsupervised anomaly detection.
+---
+
+# 🗺️ Development Roadmap
+
+PredictX is being developed incrementally toward a production-oriented predictive-maintenance platform.
+
+### Phase 1 — Core Platform
+
+- [x] React dashboard
+- [x] Node.js + Express backend
+- [x] MongoDB integration
+- [x] Machine APIs
+- [x] Dashboard API
+- [x] Python ML service
+- [x] FastAPI prediction endpoint
+- [x] Random Forest development model
+- [x] Node.js → Python ML integration
+- [x] Machine failure prediction
+- [x] Risk classification
+- [x] Health score
+- [x] Maintenance recommendation
+
+### Phase 2 — Sensor Data Platform
+
+- [ ] Sensor reading ingestion API
+- [ ] Historical sensor storage
+- [ ] Sensor validation
+- [ ] Machine telemetry history
+- [ ] Real sensor trend charts
+- [ ] Time-based filtering
+
+### Phase 3 — Prediction Engine
+
+- [ ] Prediction history
+- [ ] Prediction timestamps
+- [ ] Prediction audit trail
+- [ ] Batch predictions
+- [ ] Prediction confidence
+- [ ] Failure prediction history
+
+### Phase 4 — Anomaly Detection
 
 Planned approach:
 
+```text
 Sensor Data
      ↓
 Feature Processing
@@ -531,19 +685,19 @@ Isolation Forest
 Anomaly Score
      ↓
 Normal / Anomalous
+```
 
 Planned capabilities:
 
- Sensor anomaly detection
- Anomaly score
- Abnormal sensor identification
- Anomaly history
- Anomaly dashboard
- Alert generation
-Phase 5 — Remaining Useful Life
+- Sensor anomaly detection
+- Anomaly scoring
+- Abnormal sensor identification
+- Anomaly history
+- Alert generation
 
-Introduce Remaining Useful Life estimation.
+### Phase 5 — Remaining Useful Life
 
+```text
 Historical Sensor Data
         ↓
 Feature Engineering
@@ -553,226 +707,183 @@ Regression Model
 Estimated RUL
         ↓
 Maintenance Planning
+```
 
 Planned capabilities:
 
- RUL model
- Remaining useful hours/days
- RUL visualization
- Maintenance planning based on RUL
-Phase 6 — Maintenance Management
+- RUL estimation
+- Remaining useful hours/days
+- RUL visualization
+- Maintenance planning
 
-Build a complete maintenance workflow.
+### Phase 6 — Maintenance Management
 
-Planned capabilities:
+- [ ] Maintenance tasks
+- [ ] Engineer assignment
+- [ ] Maintenance priority
+- [ ] Due dates
+- [ ] Maintenance status
+- [ ] Maintenance history
+- [ ] Preventive maintenance scheduling
 
- Create maintenance task
- Assign engineer
- Maintenance priority
- Due date
- Maintenance status
- Maintenance history
- Machine maintenance timeline
- Preventive maintenance scheduling
-Phase 7 — Intelligent Alerts
+### Phase 7 — Intelligent Alerts
 
-Planned alert levels:
+- [ ] Automatic alert generation
+- [ ] Alert history
+- [ ] Alert acknowledgement
+- [ ] Alert resolution
+- [ ] Critical machine notifications
 
-LOW
-MEDIUM
-HIGH
-CRITICAL
-
-Planned capabilities:
-
- Automatic alert generation
- Alert history
- Alert acknowledgement
- Alert resolution
- Critical machine notifications
- Maintenance-triggered alerts
-Phase 8 — Authentication & Authorization
+### Phase 8 — Authentication & Authorization
 
 Planned roles:
 
+```text
 Admin
 Maintenance Manager
 Engineer
 Operator
+```
 
 Planned capabilities:
 
- User registration
- Login
- JWT authentication
- Role-based access control
- Protected APIs
- Protected dashboard pages
-Phase 9 — Analytics
+- [ ] User registration
+- [ ] Login
+- [ ] JWT authentication
+- [ ] Role-based access control
+- [ ] Protected APIs
+- [ ] Protected dashboard pages
 
-Build an analytics layer for operational insights.
+### Phase 9 — Analytics
 
 Planned metrics:
 
-Machine uptime
-Downtime
-Failure frequency
-Maintenance frequency
-Failure prediction trends
-Sensor trends
-Machine health trends
-Maintenance cost estimation
-Prevented failure estimation
-Phase 10 — Real ML Dataset & Model Evaluation
+- Machine uptime
+- Downtime
+- Failure frequency
+- Maintenance frequency
+- Failure prediction trends
+- Sensor trends
+- Machine health trends
+- Maintenance cost estimation
 
-The development model currently uses synthetic data.
+### Phase 10 — Real Dataset & Model Evaluation
+
+The current development model uses synthetic data.
 
 The production-oriented ML phase will introduce a real predictive-maintenance dataset.
 
 Planned work:
 
- Select public predictive-maintenance dataset
- Data cleaning
- Exploratory data analysis
- Feature engineering
- Train/validation/test split
- Baseline model
- Random Forest comparison
- XGBoost comparison
- Hyperparameter tuning
- Cross-validation
- Precision/Recall
- F1-score
- ROC-AUC
- Confusion matrix
- Feature importance
- Model versioning
-🧪 Testing Roadmap
+- [ ] Public predictive-maintenance dataset
+- [ ] Data cleaning
+- [ ] Exploratory data analysis
+- [ ] Feature engineering
+- [ ] Train / validation / test split
+- [ ] Baseline model
+- [ ] Random Forest comparison
+- [ ] XGBoost comparison
+- [ ] Hyperparameter tuning
+- [ ] Cross-validation
+- [ ] Precision / Recall
+- [ ] F1-score
+- [ ] ROC-AUC
+- [ ] Confusion matrix
+- [ ] Feature importance
+- [ ] Model versioning
 
-Planned testing coverage:
+---
 
-Backend
-Unit tests
-API tests
-Validation tests
-Error handling tests
-Authentication tests
-ML
-Input validation
-Prediction tests
-Model loading tests
-Model evaluation
-Edge-case testing
-Frontend
-Component testing
-API error states
-Loading states
-Dashboard behavior
-End-to-End
+# 🧪 Testing Roadmap
+
+Planned testing coverage includes:
+
+### Backend
+
+- Unit tests
+- API tests
+- Validation tests
+- Error handling tests
+- Authentication tests
+
+### Machine Learning
+
+- Input validation
+- Prediction tests
+- Model loading tests
+- Model evaluation
+- Edge-case testing
+
+### Frontend
+
+- Component testing
+- API error states
+- Loading states
+- Dashboard behavior
+
+### End-to-End
+
+```text
 React
- ↓
+  ↓
 Express
- ↓
+  ↓
 MongoDB
- ↓
+  ↓
 FastAPI
- ↓
+  ↓
 ML Model
-🔐 Security Roadmap
+```
+
+---
+
+# 🔐 Security Roadmap
 
 Planned production security improvements:
 
-JWT authentication
-Role-based authorization
-Secure environment variables
-Request validation
-Rate limiting
-Helmet security headers
-CORS configuration
-API error handling
-Input sanitization
-Secure database configuration
-☁️ Deployment Roadmap
+- JWT authentication
+- Role-based authorization
+- Secure environment variables
+- Request validation
+- Rate limiting
+- Helmet security headers
+- CORS configuration
+- API error handling
+- Input sanitization
+- Secure database configuration
 
-Production deployment will use:
+---
 
-Frontend
-→ Vercel
+# 🔮 Future Vision
 
-Backend
-→ Render
+PredictX is intended to evolve beyond a basic prediction dashboard into a broader industrial intelligence platform.
 
-ML Service
-→ Render
+Future possibilities include:
 
-Database
-→ MongoDB Atlas
+- Real-time machine telemetry
+- WebSocket-based live updates
+- IoT sensor integration
+- Edge inference
+- Model monitoring
+- Model drift detection
+- Automated model retraining
+- Email notifications
+- Slack / Teams notifications
+- Maintenance cost optimization
+- Multi-plant support
+- Machine comparison
+- Advanced analytics
+- AI-generated maintenance summaries
 
-Production environment variables will be configured separately for each service.
+---
 
-No secrets or credentials will be committed to GitHub.
+# 📌 Project Status
 
-📈 Future Product Improvements
+**Active Development**
 
-Future versions may include:
+The current version establishes a working end-to-end predictive-maintenance pipeline:
 
-Real-time machine telemetry
-WebSocket-based live updates
-IoT sensor integration
-Edge inference
-Model monitoring
-Model drift detection
-Automated retraining
-Email notifications
-Slack/Teams notifications
-Maintenance cost optimization
-Multi-plant support
-Machine comparison
-Advanced analytics
-AI-generated maintenance summaries
-💼 Resume Value
-
-PredictX demonstrates experience across:
-
-Full-Stack Development
-React
-JavaScript
-REST APIs
-Node.js
-Express.js
-MongoDB
-API integration
-Production architecture
-Machine Learning
-Data preprocessing
-Feature engineering
-Classification
-Random Forest
-Anomaly detection
-Regression
-Model evaluation
-System Design
-Microservice-style ML architecture
-Backend/ML communication
-Database design
-API design
-Production deployment
-📌 Resume Description
-
-Built an AI-powered predictive maintenance platform using React, Node.js, Express.js, MongoDB, Python, and FastAPI to analyze industrial machine sensor data, predict equipment failure risk, calculate machine health scores, and generate preventive maintenance recommendations.
-
-🎤 Interview Explanation
-
-A simple way to explain the architecture:
-
-"PredictX is a full-stack predictive maintenance platform. React provides the operational dashboard, Node.js and Express handle APIs and business logic, MongoDB stores machine and sensor data, and a separate Python FastAPI service handles machine-learning inference. The backend sends sensor features to the ML service, receives the failure probability and risk classification, and exposes the result to the React application."
-
-📜 Current Project Status
-
-PredictX is actively under development.
-
-The current version contains a working end-to-end predictive-maintenance pipeline:
-
+```text
 React
   ↓
 Node.js + Express
@@ -784,41 +895,66 @@ Python + FastAPI
 Machine Learning Model
   ↓
 Prediction
+```
 
-The platform is being incrementally upgraded toward a production-ready predictive-maintenance system.
+The platform is being incrementally upgraded toward a more production-oriented predictive-maintenance system.
 
-👨‍💻 Author
+---
 
-Gautam Yadav
+# 🎯 What This Project Demonstrates
 
-GitHub:
+PredictX brings together several areas of software engineering:
 
+**Full-Stack Development**
+
+- React
+- JavaScript
+- REST APIs
+- Node.js
+- Express.js
+- MongoDB
+
+**Machine Learning**
+
+- Data preprocessing
+- Feature engineering
+- Classification
+- Random Forest
+- Model inference
+- Model evaluation
+
+**System Design**
+
+- Service separation
+- Backend / ML communication
+- Database design
+- API design
+- Deployment architecture
+
+---
+
+# 👨‍💻 Author
+
+## Gautam Yadav
+
+**Software Engineer · Full-Stack Developer · AI/ML Enthusiast**
+
+GitHub:  
 https://github.com/Gautam0804
 
-⭐ Project Vision
+---
 
-PredictX aims to evolve from a predictive-maintenance prototype into a production-oriented industrial intelligence platform capable of helping maintenance teams detect problems early, prioritize machines, schedule preventive maintenance, and reduce unexpected equipment downtime.
+## ⭐ Project Vision
 
-License
+PredictX aims to evolve from a predictive-maintenance prototype into a production-oriented industrial intelligence platform capable of helping maintenance teams:
 
-This project is currently developed as a portfolio and learning project.
+- Detect problems earlier
+- Prioritize high-risk machines
+- Plan preventive maintenance
+- Monitor machine health
+- Analyze operational trends
+- Reduce unexpected equipment downtime
 
+---
 
-### 🔥 Why I want this README before the first push
-
-This gives your GitHub repo a **real product story**:
-
-```text
-Current Working System
-        ↓
-Clear Architecture
-        ↓
-ML Pipeline
-        ↓
-API Documentation
-        ↓
-Roadmap
-        ↓
-Production Deployment
-        ↓
-Continuous Improvements
+### Built with code, curiosity & chai ☕
